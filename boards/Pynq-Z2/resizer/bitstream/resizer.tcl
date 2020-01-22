@@ -41,6 +41,11 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 # project, but make sure you do not have an existing project
 # <./resizer/resizer.xpr> in the current working folder.
 
+# pull cmdline variables to use during setup -- assume argv 0 is the path
+# to ip_config.tcl
+set config_file_path  [lindex $argv 0]
+source $config_file_path
+
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
    create_project resizer resizer -part xc7z020clg400-1
@@ -90,7 +95,7 @@ if { ${design_name} eq "" } {
    set errMsg "Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
    set nRet 1
 } elseif { [get_files -quiet ${design_name}.bd] ne "" } {
-   # USE CASES: 
+   # USE CASES:
    #    6) Current opened design, has components, but diff names, design_name exists in project.
    #    7) No opened design, design_name exists in project.
 
@@ -124,11 +129,11 @@ set bCheckIPsPassed 1
 ##################################################################
 set bCheckIPs 1
 if { $bCheckIPs == 1 } {
-   set list_check_ips "\ 
+   set list_check_ips "\
 xilinx.com:ip:axi_dma:7.1\
 xilinx.com:ip:axis_dwidth_converter:1.1\
 xilinx.com:ip:processing_system7:5.5\
-xilinx.com:hls:resize_accel:1.0\
+$::config_ip_vlnv\
 xilinx.com:ip:proc_sys_reset:5.0\
 "
 
@@ -219,7 +224,7 @@ proc create_root_design { parentCell } {
   # Create instance: axis_dwidth_converter_0, and set properties
   set axis_dwidth_converter_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_dwidth_converter:1.1 axis_dwidth_converter_0 ]
   set_property -dict [ list \
-   CONFIG.M_TDATA_NUM_BYTES {3} \
+   CONFIG.M_TDATA_NUM_BYTES $::config_ip_bytes_in \
    CONFIG.S_TDATA_NUM_BYTES {4} \
  ] $axis_dwidth_converter_0
 
@@ -228,7 +233,7 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.HAS_MI_TKEEP {1} \
    CONFIG.M_TDATA_NUM_BYTES {4} \
-   CONFIG.S_TDATA_NUM_BYTES {3} \
+   CONFIG.S_TDATA_NUM_BYTES $::config_ip_bytes_out \
  ] $axis_dwidth_converter_1
 
   # Create instance: processing_system7_0, and set properties
@@ -303,7 +308,7 @@ proc create_root_design { parentCell } {
  ] $processing_system7_0
 
   # Create instance: resize_accel_0, and set properties
-  set resize_accel_0 [ create_bd_cell -type ip -vlnv xilinx.com:hls:resize_accel:1.0 resize_accel_0 ]
+  set resize_accel_0 [ create_bd_cell -type ip -vlnv $::config_ip_vlnv resize_accel_0 ]
 
   # Create instance: rst_ps7_0_100M, and set properties
   set rst_ps7_0_100M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps7_0_100M ]
@@ -313,12 +318,11 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net S01_AXI_1 [get_bd_intf_pins axi_dma_0/M_AXI_S2MM] [get_bd_intf_pins axi_interconnect_1/S01_AXI]
   connect_bd_intf_net -intf_net axi_dma_0_M_AXIS_MM2S [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S] [get_bd_intf_pins axis_dwidth_converter_0/S_AXIS]
   connect_bd_intf_net -intf_net axi_interconnect_0_M00_AXI [get_bd_intf_pins axi_dma_0/S_AXI_LITE] [get_bd_intf_pins axi_interconnect_0/M00_AXI]
-  connect_bd_intf_net -intf_net axi_interconnect_0_M01_AXI [get_bd_intf_pins axi_interconnect_0/M01_AXI] [get_bd_intf_pins resize_accel_0/s_axi_AXILiteS]
   connect_bd_intf_net -intf_net axi_interconnect_1_M00_AXI [get_bd_intf_pins axi_interconnect_1/M00_AXI] [get_bd_intf_pins processing_system7_0/S_AXI_HP0]
-  connect_bd_intf_net -intf_net axis_dwidth_converter_0_M_AXIS [get_bd_intf_pins axis_dwidth_converter_0/M_AXIS] [get_bd_intf_pins resize_accel_0/src]
+  connect_bd_intf_net -intf_net axis_dwidth_converter_0_M_AXIS [get_bd_intf_pins axis_dwidth_converter_0/M_AXIS] [get_bd_intf_pins resize_accel_0/$::config_ip_axis_name_in]
   connect_bd_intf_net -intf_net axis_dwidth_converter_1_M_AXIS [get_bd_intf_pins axi_dma_0/S_AXIS_S2MM] [get_bd_intf_pins axis_dwidth_converter_1/M_AXIS]
   connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins axi_interconnect_0/S00_AXI] [get_bd_intf_pins processing_system7_0/M_AXI_GP0]
-  connect_bd_intf_net -intf_net resize_accel_0_dst [get_bd_intf_pins axis_dwidth_converter_1/S_AXIS] [get_bd_intf_pins resize_accel_0/dst]
+  connect_bd_intf_net -intf_net resize_accel_0_dst [get_bd_intf_pins axis_dwidth_converter_1/S_AXIS] [get_bd_intf_pins resize_accel_0/$::config_ip_axis_name_out]
 
   # Create port connections
   connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] [get_bd_pins axi_dma_0/m_axi_s2mm_aclk] [get_bd_pins axi_dma_0/s_axi_lite_aclk] [get_bd_pins axi_interconnect_0/ACLK] [get_bd_pins axi_interconnect_0/M00_ACLK] [get_bd_pins axi_interconnect_0/M01_ACLK] [get_bd_pins axi_interconnect_0/S00_ACLK] [get_bd_pins axi_interconnect_1/ACLK] [get_bd_pins axi_interconnect_1/M00_ACLK] [get_bd_pins axi_interconnect_1/S00_ACLK] [get_bd_pins axi_interconnect_1/S01_ACLK] [get_bd_pins axis_dwidth_converter_0/aclk] [get_bd_pins axis_dwidth_converter_1/aclk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins resize_accel_0/ap_clk] [get_bd_pins rst_ps7_0_100M/slowest_sync_clk]
@@ -330,7 +334,11 @@ proc create_root_design { parentCell } {
   create_bd_addr_seg -range 0x20000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_0/Data_MM2S] [get_bd_addr_segs processing_system7_0/S_AXI_HP0/HP0_DDR_LOWOCM] SEG_processing_system7_0_HP0_DDR_LOWOCM
   create_bd_addr_seg -range 0x20000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_0/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_HP0/HP0_DDR_LOWOCM] SEG_processing_system7_0_HP0_DDR_LOWOCM
   create_bd_addr_seg -range 0x00010000 -offset 0x40400000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs axi_dma_0/S_AXI_LITE/Reg] SEG_axi_dma_0_Reg
-  create_bd_addr_seg -range 0x00010000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs resize_accel_0/s_axi_AXILiteS/Reg] SEG_resize_accel_0_Reg
+
+  if { $::config_ip_use_axilite == 1 } {
+    connect_bd_intf_net -intf_net axi_interconnect_0_M01_AXI [get_bd_intf_pins axi_interconnect_0/M01_AXI] [get_bd_intf_pins resize_accel_0/s_axi_AXILiteS]
+    create_bd_addr_seg -range 0x00010000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs resize_accel_0/s_axi_AXILiteS/Reg] SEG_resize_accel_0_Reg
+  }
 
 
   # Restore current instance
@@ -346,5 +354,3 @@ proc create_root_design { parentCell } {
 ##################################################################
 
 create_root_design ""
-
-
