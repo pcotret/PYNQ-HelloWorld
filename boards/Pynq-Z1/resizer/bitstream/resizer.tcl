@@ -41,12 +41,21 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 # project, but make sure you do not have an existing project
 # <./resizer/resizer.xpr> in the current working folder.
 
+if {$argc != 1} {
+  puts "Unexpected args, expected <path to ip_config.tcl>"
+  exit
+}
+
+# pull cmdline variables to use during setup
+set config_file_path  [lindex $argv 0]
+source $config_file_path
+
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
    create_project resizer resizer -part xc7z020clg400-1
 }
 
-set_property  ip_repo_paths ../../../ip [current_project]
+set_property ip_repo_paths $config_ip_repo [current_project]
 update_ip_catalog
 
 # CHANGE DESIGN NAME HERE
@@ -90,7 +99,7 @@ if { ${design_name} eq "" } {
    set errMsg "Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
    set nRet 1
 } elseif { [get_files -quiet ${design_name}.bd] ne "" } {
-   # USE CASES: 
+   # USE CASES:
    #    6) Current opened design, has components, but diff names, design_name exists in project.
    #    7) No opened design, design_name exists in project.
 
@@ -124,11 +133,11 @@ set bCheckIPsPassed 1
 ##################################################################
 set bCheckIPs 1
 if { $bCheckIPs == 1 } {
-   set list_check_ips "\ 
+   set list_check_ips "\
 xilinx.com:ip:axi_dma:7.1\
 xilinx.com:ip:axis_dwidth_converter:1.1\
 xilinx.com:ip:processing_system7:5.5\
-xilinx.com:hls:resize_accel:1.0\
+$config_ip_vlnv\
 xilinx.com:ip:proc_sys_reset:5.0\
 "
 
@@ -219,7 +228,7 @@ proc create_root_design { parentCell } {
   # Create instance: axis_dwidth_converter_0, and set properties
   set axis_dwidth_converter_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_dwidth_converter:1.1 axis_dwidth_converter_0 ]
   set_property -dict [ list \
-   CONFIG.M_TDATA_NUM_BYTES {3} \
+   CONFIG.M_TDATA_NUM_BYTES {$config_ip_bytes_in} \
    CONFIG.S_TDATA_NUM_BYTES {4} \
  ] $axis_dwidth_converter_0
 
@@ -228,7 +237,7 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.HAS_MI_TKEEP {1} \
    CONFIG.M_TDATA_NUM_BYTES {4} \
-   CONFIG.S_TDATA_NUM_BYTES {3} \
+   CONFIG.S_TDATA_NUM_BYTES {$config_ip_bytes_out} \
  ] $axis_dwidth_converter_1
 
   # Create instance: processing_system7_0, and set properties
@@ -303,7 +312,7 @@ proc create_root_design { parentCell } {
  ] $processing_system7_0
 
   # Create instance: resize_accel_0, and set properties
-  set resize_accel_0 [ create_bd_cell -type ip -vlnv xilinx.com:hls:resize_accel:1.0 resize_accel_0 ]
+  set resize_accel_0 [ create_bd_cell -type ip -vlnv $config_ip_vlnv resize_accel_0 ]
 
   # Create instance: rst_ps7_0_100M, and set properties
   set rst_ps7_0_100M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps7_0_100M ]
@@ -346,5 +355,3 @@ proc create_root_design { parentCell } {
 ##################################################################
 
 create_root_design ""
-
-
