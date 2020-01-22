@@ -224,7 +224,7 @@ proc create_root_design { parentCell } {
   # Create instance: axis_dwidth_converter_0, and set properties
   set axis_dwidth_converter_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_dwidth_converter:1.1 axis_dwidth_converter_0 ]
   set_property -dict [ list \
-   CONFIG.M_TDATA_NUM_BYTES {$config_ip_bytes_in} \
+   CONFIG.M_TDATA_NUM_BYTES $config_ip_bytes_in \
    CONFIG.S_TDATA_NUM_BYTES {4} \
  ] $axis_dwidth_converter_0
 
@@ -233,7 +233,7 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.HAS_MI_TKEEP {1} \
    CONFIG.M_TDATA_NUM_BYTES {4} \
-   CONFIG.S_TDATA_NUM_BYTES {$config_ip_bytes_out} \
+   CONFIG.S_TDATA_NUM_BYTES $config_ip_bytes_out \
  ] $axis_dwidth_converter_1
 
   # Create instance: processing_system7_0, and set properties
