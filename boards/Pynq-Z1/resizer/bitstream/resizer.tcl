@@ -51,7 +51,7 @@ if { $list_projs eq "" } {
    create_project resizer resizer -part xc7z020clg400-1
 }
 
-set_property ip_repo_paths $config_ip_repo [current_project]
+set_property ip_repo_paths $::config_ip_repo [current_project]
 update_ip_catalog
 
 # CHANGE DESIGN NAME HERE
@@ -133,7 +133,7 @@ if { $bCheckIPs == 1 } {
 xilinx.com:ip:axi_dma:7.1\
 xilinx.com:ip:axis_dwidth_converter:1.1\
 xilinx.com:ip:processing_system7:5.5\
-$config_ip_vlnv\
+$::config_ip_vlnv\
 xilinx.com:ip:proc_sys_reset:5.0\
 "
 
@@ -224,7 +224,7 @@ proc create_root_design { parentCell } {
   # Create instance: axis_dwidth_converter_0, and set properties
   set axis_dwidth_converter_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_dwidth_converter:1.1 axis_dwidth_converter_0 ]
   set_property -dict [ list \
-   CONFIG.M_TDATA_NUM_BYTES $config_ip_bytes_in \
+   CONFIG.M_TDATA_NUM_BYTES $::config_ip_bytes_in \
    CONFIG.S_TDATA_NUM_BYTES {4} \
  ] $axis_dwidth_converter_0
 
@@ -233,7 +233,7 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.HAS_MI_TKEEP {1} \
    CONFIG.M_TDATA_NUM_BYTES {4} \
-   CONFIG.S_TDATA_NUM_BYTES $config_ip_bytes_out \
+   CONFIG.S_TDATA_NUM_BYTES $::config_ip_bytes_out \
  ] $axis_dwidth_converter_1
 
   # Create instance: processing_system7_0, and set properties
@@ -308,7 +308,7 @@ proc create_root_design { parentCell } {
  ] $processing_system7_0
 
   # Create instance: resize_accel_0, and set properties
-  set resize_accel_0 [ create_bd_cell -type ip -vlnv $config_ip_vlnv resize_accel_0 ]
+  set resize_accel_0 [ create_bd_cell -type ip -vlnv $::config_ip_vlnv resize_accel_0 ]
 
   # Create instance: rst_ps7_0_100M, and set properties
   set rst_ps7_0_100M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps7_0_100M ]
