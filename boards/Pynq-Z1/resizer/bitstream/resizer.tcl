@@ -41,12 +41,8 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 # project, but make sure you do not have an existing project
 # <./resizer/resizer.xpr> in the current working folder.
 
-if {$argc != 1} {
-  puts "Unexpected args, expected <path to ip_config.tcl>"
-  exit
-}
-
-# pull cmdline variables to use during setup
+# pull cmdline variables to use during setup -- assume argv 0 is the path
+# to ip_config.tcl
 set config_file_path  [lindex $argv 0]
 source $config_file_path
 
