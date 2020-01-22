@@ -4,6 +4,8 @@ variable config_ip_bytes_in
 variable config_ip_bytes_out
 variable config_ip_axis_name_in
 variable config_ip_axis_name_out
+variable config_ip_clk_name
+variable config_ip_nrst_name
 variable config_ip_use_axilite
 variable config_ip_project_dir
 
@@ -25,5 +27,9 @@ set config_ip_bytes_out 3
 set config_ip_axis_name_in src
 # the name of the output AXI stream interface
 set config_ip_axis_name_out dst
+# the name of the clock signal
+set config_ip_clk_name ap_clk
+# the name of the active-low reset signal
+set config_ip_nrst_name ap_rst_n
 # whether the IP needs an AXI Lite interface for control
 set config_ip_use_axilite 1
