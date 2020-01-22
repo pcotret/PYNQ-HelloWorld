@@ -231,6 +231,8 @@ proc create_root_design { parentCell } {
    CONFIG.HAS_MI_TKEEP {1} \
    CONFIG.M_TDATA_NUM_BYTES {4} \
    CONFIG.S_TDATA_NUM_BYTES $::config_ip_bytes_out \
+   CONFIG.HAS_TLAST.VALUE_SRC USER \
+   CONFIG.HAS_TLAST {1} \
  ] $axis_dwidth_converter_1
 
   # Create instance: ps8_0_axi_periph, and set properties
