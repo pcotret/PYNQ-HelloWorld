@@ -5,10 +5,16 @@ variable config_ip_bytes_out
 variable config_ip_axis_name_in
 variable config_ip_axis_name_out
 variable config_ip_use_axilite
+variable config_ip_project_dir
 
-# IP repositories; use absolute paths or relative to the
+# for arguments involving paths below: use absolute paths or relative to the
 # platform/overlay/bitstream folder
+# where to create the project
+set config_ip_project_dir ./resizer
+# IP repositories that the project depends on
 set config_ip_repo ../../../ip
+
+# non-path arguments
 # VLNV of the IP block
 set config_ip_vlnv xilinx.com:hls:resize_accel:1.0
 # width of the AXI stream into the IP, in bytes

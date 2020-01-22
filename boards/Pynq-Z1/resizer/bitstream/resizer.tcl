@@ -48,7 +48,7 @@ source $config_file_path
 
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
-   create_project resizer resizer -part xc7z020clg400-1
+   create_project resizer $::config_ip_project_dir -part xc7z020clg400-1
 }
 
 set_property ip_repo_paths $::config_ip_repo [current_project]

@@ -15,10 +15,10 @@ block_design:
 	cd $(design_folder); vivado -mode batch -source $(overlay_name).tcl -tclargs $(ip_config) -notrace
 
 bitstream:
-	cd $(design_folder); vivado -mode batch -source build_bitstream.tcl -notrace
+	cd $(design_folder); vivado -mode batch -source build_bitstream.tcl -tclargs $(ip_config) -notrace
 
 check_timing:
-	cd $(design_folder); vivado -mode batch -source check_$(overlay_name).tcl -notrace
+	cd $(design_folder); vivado -mode batch -source check_$(overlay_name).tcl -tclargs $(ip_config) -notrace
 
 clean:
 	cd $(design_folder); rm -rf $(overlay_name) *.jou *.log NA
