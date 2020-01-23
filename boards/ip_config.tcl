@@ -8,6 +8,7 @@ variable config_ip_clk_name
 variable config_ip_nrst_name
 variable config_ip_use_axilite
 variable config_ip_project_dir
+variable config_output_products_dir
 
 # for arguments involving paths below: use absolute paths or relative to the
 # platform/overlay/bitstream folder
@@ -15,6 +16,8 @@ variable config_ip_project_dir
 set config_ip_project_dir ./resizer
 # IP repositories that the project depends on
 set config_ip_repo ../../../ip
+# where the produced bitfile and .hwh file will be placed
+set config_output_products_dir ./
 
 # non-path arguments
 # VLNV of the IP block
