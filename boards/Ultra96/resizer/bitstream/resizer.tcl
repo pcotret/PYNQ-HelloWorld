@@ -51,7 +51,7 @@ if { $list_projs eq "" } {
    create_project resizer $::config_ip_project_dir -part xczu3eg-sbva484-1-e
 }
 
-set_property  ip_repo_paths  ../../../ip [current_project]
+set_property ip_repo_paths $::config_ip_repo [current_project]
 update_ip_catalog
 
 # CHANGE DESIGN NAME HERE

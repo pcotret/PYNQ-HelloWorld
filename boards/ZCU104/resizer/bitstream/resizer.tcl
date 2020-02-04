@@ -52,7 +52,7 @@ if { $list_projs eq "" } {
    set_property BOARD_PART xilinx.com:zcu104:part0:1.1 [current_project]
 }
 
-set_property  ip_repo_paths  ../../../ip [current_project]
+set_property ip_repo_paths $::config_ip_repo [current_project]
 update_ip_catalog
 
 # CHANGE DESIGN NAME HERE
