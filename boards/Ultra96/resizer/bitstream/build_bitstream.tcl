@@ -8,6 +8,11 @@ source $config_file_path
 open_project $::config_ip_project_dir/${overlay_name}.xpr
 open_bd_design $::config_ip_project_dir/${overlay_name}.srcs/sources_1/bd/${design_name}/${design_name}.bd
 
+# set up cache
+if {$::config_remote_cache != ""} {
+  config_ip_cache -import_from_project -use_cache_location $::config_remote_cache
+}
+
 # Add top wrapper
 make_wrapper -files [get_files $::config_ip_project_dir/${overlay_name}.srcs/sources_1/bd/${design_name}/${design_name}.bd] -top
 add_files -norecurse $::config_ip_project_dir/${overlay_name}.srcs/sources_1/bd/${design_name}/hdl/${design_name}_wrapper.v
