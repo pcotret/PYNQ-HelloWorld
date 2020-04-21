@@ -10,6 +10,7 @@ variable config_ip_use_axilite
 variable config_ip_project_dir
 variable config_output_products_dir
 variable config_remote_cache
+variable config_util_report_filename
 
 # for arguments involving paths below: use absolute paths or relative to the
 # platform/overlay/bitstream folder
@@ -19,6 +20,8 @@ set config_ip_project_dir ./resizer
 set config_ip_repo ../../../ip
 # where the produced bitfile and .hwh file will be placed
 set config_output_products_dir ./
+# where the synth util XML report will be written
+set config_util_report_filename "synth_report.xml"
 
 # non-path arguments
 # VLNV of the IP block

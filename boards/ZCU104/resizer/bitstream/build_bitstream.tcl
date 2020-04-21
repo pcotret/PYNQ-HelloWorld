@@ -34,3 +34,7 @@ file copy -force $::config_ip_project_dir/${overlay_name}.runs/impl_1/${design_n
 
 # copy hwh files
 file copy -force $::config_ip_project_dir/${overlay_name}.srcs/sources_1/bd/${design_name}/hw_handoff/${design_name}.hwh $::config_output_products_dir/${overlay_name}.hwh
+
+# save report
+open_run synth_1 -name synth_1
+report_utilization -hierarchical -hierarchical_depth 4 -file $::config_util_report_filename -format xml
