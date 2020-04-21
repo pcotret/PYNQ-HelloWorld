@@ -893,8 +893,8 @@ proc create_root_design { parentCell } {
 
 
   if { $::config_ip_use_axilite == 1 } {
-    connect_bd_intf_net -intf_net ps8_0_axi_periph_M01_AXI [get_bd_intf_pins ps8_0_axi_periph/M01_AXI] [get_bd_intf_pins resize_accel_0/s_axi_AXILiteS]
-    create_bd_addr_seg -range 0x00010000 -offset 0xA0010000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs resize_accel_0/s_axi_AXILiteS/Reg] SEG_resize_accel_0_Reg
+    connect_bd_intf_net -intf_net ps8_0_axi_periph_M01_AXI [get_bd_intf_pins ps8_0_axi_periph/M01_AXI] [get_bd_intf_pins resize_accel_0/$::config_ip_axilite_name]
+    create_bd_addr_seg -range 0x00010000 -offset 0xA0010000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs resize_accel_0/$::config_ip_axilite_name/Reg] SEG_resize_accel_0_Reg
   }
 
   # Restore current instance
