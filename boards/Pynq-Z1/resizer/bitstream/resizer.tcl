@@ -308,7 +308,7 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_USE_S_AXI_HP0 {1} \
  ] $processing_system7_0
 
-  set_property -dict [list CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {$::config_ip_fclk}] $processing_system7_0
+  set_property -dict [list CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ $::config_ip_fclk] $processing_system7_0
 
   # Create instance: resize_accel_0, and set properties
   set resize_accel_0 [ create_bd_cell -type ip -vlnv $::config_ip_vlnv resize_accel_0 ]
