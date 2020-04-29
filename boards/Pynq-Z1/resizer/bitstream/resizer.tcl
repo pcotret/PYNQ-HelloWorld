@@ -308,16 +308,17 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_USE_S_AXI_HP0 {1} \
  ] $processing_system7_0
 
-  # set generated Fclk and match on accelerator interfaces
-  set_property -dict [list CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ $::config_ip_fclk] $processing_system7_0
-  set_property CONFIG.FREQ_HZ [expr $::config_ip_fclk*1000000] [get_bd_intf_pins resize_accel_0/$::config_ip_axis_name_in]
-  set_property CONFIG.FREQ_HZ [expr $::config_ip_fclk*1000000] [get_bd_intf_pins resize_accel_0/$::config_ip_axis_name_out]
 
   # Create instance: resize_accel_0, and set properties
   set resize_accel_0 [ create_bd_cell -type ip -vlnv $::config_ip_vlnv resize_accel_0 ]
 
   # Create instance: rst_ps7_0_100M, and set properties
   set rst_ps7_0_100M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps7_0_100M ]
+  
+  # set generated Fclk and match on accelerator interfaces
+  set_property -dict [list CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ $::config_ip_fclk] $processing_system7_0
+  set_property CONFIG.FREQ_HZ [expr $::config_ip_fclk*1000000] [get_bd_intf_pins resize_accel_0/$::config_ip_axis_name_in]
+  set_property CONFIG.FREQ_HZ [expr $::config_ip_fclk*1000000] [get_bd_intf_pins resize_accel_0/$::config_ip_axis_name_out]
 
   # Create interface connections
   connect_bd_intf_net [get_bd_intf_pins axi_dma_0/M_AXI] [get_bd_intf_pins axi_protocol_convert_0/S_AXI]
