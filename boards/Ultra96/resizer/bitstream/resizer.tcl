@@ -213,6 +213,7 @@ proc create_root_design { parentCell } {
    CONFIG.c_single_interface {1} \
    CONFIG.c_m_axi_s2mm_data_width {64} \
    CONFIG.c_m_axi_mm2s_data_width {64} \
+   CONFIG.c_m_axis_mm2s_tdata_width {64} \
  ] $axi_dma_0
 
  set axi_protocol_convert_0 [create_bd_cell -type ip -vlnv xilinx.com:ip:axi_protocol_converter:2.1 axi_protocol_convert_0]
