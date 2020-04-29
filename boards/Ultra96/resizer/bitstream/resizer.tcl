@@ -836,9 +836,9 @@ proc create_root_design { parentCell } {
   CONFIG.c_sg_include_stscntrl_strm {0} \
   CONFIG.c_sg_length_width {23} \
   CONFIG.c_single_interface {1} \
-  CONFIG.c_m_axi_s2mm_data_width [expr native_bus_width_bytes * 8] \
-  CONFIG.c_m_axi_mm2s_data_width [expr native_bus_width_bytes * 8] \
-  CONFIG.c_m_axis_mm2s_tdata_width [expr native_bus_width_bytes * 8] \
+  CONFIG.c_m_axi_s2mm_data_width [expr $native_bus_width_bytes * 8] \
+  CONFIG.c_m_axi_mm2s_data_width [expr $native_bus_width_bytes * 8] \
+  CONFIG.c_m_axis_mm2s_tdata_width [expr $native_bus_width_bytes * 8] \
 ] $axi_dma_0
 
 set axi_protocol_convert_0 [create_bd_cell -type ip -vlnv xilinx.com:ip:axi_protocol_converter:2.1 axi_protocol_convert_0]
