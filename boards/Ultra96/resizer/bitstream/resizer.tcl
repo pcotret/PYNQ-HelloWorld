@@ -202,31 +202,6 @@ proc create_root_design { parentCell } {
 
   # Create ports
 
-  # Create instance: axi_dma_0, and set properties
-  set axi_dma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_0 ]
-  set_property -dict [ list \
-   CONFIG.c_include_sg {0} \
-   CONFIG.c_mm2s_burst_size {256} \
-   CONFIG.c_s2mm_burst_size {256} \
-   CONFIG.c_sg_include_stscntrl_strm {0} \
-   CONFIG.c_sg_length_width {23} \
-   CONFIG.c_single_interface {1} \
-   CONFIG.c_m_axi_s2mm_data_width {64} \
-   CONFIG.c_m_axi_mm2s_data_width {64} \
-   CONFIG.c_m_axis_mm2s_tdata_width {64} \
- ] $axi_dma_0
-
- set axi_protocol_convert_0 [create_bd_cell -type ip -vlnv xilinx.com:ip:axi_protocol_converter:2.1 axi_protocol_convert_0]
-
-  # Create instance: ps8_0_axi_periph, and set properties
-  set ps8_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 ps8_0_axi_periph ]
-  set_property -dict [ list \
-   CONFIG.NUM_MI {2} \
- ] $ps8_0_axi_periph
-
-  # Create instance: resize_accel_0, and set properties
-  set resize_accel_0 [ create_bd_cell -type ip -vlnv $::config_ip_vlnv resize_accel_0 ]
-
   # Create instance: rst_ps8_0_100M, and set properties
   set rst_ps8_0_100M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps8_0_100M ]
 
@@ -850,6 +825,34 @@ proc create_root_design { parentCell } {
    CONFIG.SUBPRESET1 {Custom} \
  ] $zynq_ultra_ps_e_0
 
+ set native_bus_width_bytes 16
+
+ # Create instance: axi_dma_0, and set properties
+ set axi_dma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_0 ]
+ set_property -dict [ list \
+  CONFIG.c_include_sg {0} \
+  CONFIG.c_mm2s_burst_size {256} \
+  CONFIG.c_s2mm_burst_size {256} \
+  CONFIG.c_sg_include_stscntrl_strm {0} \
+  CONFIG.c_sg_length_width {23} \
+  CONFIG.c_single_interface {1} \
+  CONFIG.c_m_axi_s2mm_data_width [expr native_bus_width_bytes * 8] \
+  CONFIG.c_m_axi_mm2s_data_width [expr native_bus_width_bytes * 8] \
+  CONFIG.c_m_axis_mm2s_tdata_width [expr native_bus_width_bytes * 8] \
+] $axi_dma_0
+
+set axi_protocol_convert_0 [create_bd_cell -type ip -vlnv xilinx.com:ip:axi_protocol_converter:2.1 axi_protocol_convert_0]
+
+ # Create instance: ps8_0_axi_periph, and set properties
+ set ps8_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 ps8_0_axi_periph ]
+ set_property -dict [ list \
+  CONFIG.NUM_MI {2} \
+] $ps8_0_axi_periph
+
+ # Create instance: resize_accel_0, and set properties
+ set resize_accel_0 [ create_bd_cell -type ip -vlnv $::config_ip_vlnv resize_accel_0 ]
+
+
   # set generated Fclk
   set_property -dict [list CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ $::config_ip_fclk] $zynq_ultra_ps_e_0
 
@@ -867,7 +870,6 @@ proc create_root_design { parentCell } {
 
   # Create DWCs for input and output streams only if accel I/O size does not
   # match the native bus width
-  set native_bus_width_bytes 8
   if { $::config_ip_bytes_in != $native_bus_width_bytes } {
     # Create instance: axis_dwidth_converter_0, and set properties
     set axis_dwidth_converter_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_dwidth_converter:1.1 axis_dwidth_converter_0 ]
