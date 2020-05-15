@@ -12,6 +12,7 @@ variable config_ip_project_dir
 variable config_output_products_dir
 variable config_remote_cache
 variable config_util_report_filename
+variable config_ip_fclk
 
 # for arguments involving paths below: use absolute paths or relative to the
 # platform/overlay/bitstream folder
@@ -45,3 +46,5 @@ set config_ip_use_axilite 1
 set config_ip_axilite_name "s_axi_AXILiteS"
 # Vivado OOC IP cache
 set config_remote_cache ""
+# clock frequency
+set config_ip_fclk 100.0

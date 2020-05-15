@@ -201,49 +201,6 @@ proc create_root_design { parentCell } {
 
   # Create ports
 
-  # Create instance: axi_dma_0, and set properties
-  set axi_dma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_0 ]
-  set_property -dict [ list \
-   CONFIG.c_include_sg {0} \
-   CONFIG.c_mm2s_burst_size {256} \
-   CONFIG.c_s2mm_burst_size {256} \
-   CONFIG.c_sg_include_stscntrl_strm {0} \
-   CONFIG.c_sg_length_width {23} \
- ] $axi_dma_0
-
-  # Create instance: axi_interconnect_0, and set properties
-  set axi_interconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_0 ]
-  set_property -dict [ list \
-   CONFIG.NUM_MI {1} \
-   CONFIG.NUM_SI {2} \
- ] $axi_interconnect_0
-
-  # Create instance: axis_dwidth_converter_0, and set properties
-  set axis_dwidth_converter_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_dwidth_converter:1.1 axis_dwidth_converter_0 ]
-  set_property -dict [ list \
-   CONFIG.M_TDATA_NUM_BYTES $::config_ip_bytes_in \
-   CONFIG.S_TDATA_NUM_BYTES {4} \
- ] $axis_dwidth_converter_0
-
-  # Create instance: axis_dwidth_converter_1, and set properties
-  set axis_dwidth_converter_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_dwidth_converter:1.1 axis_dwidth_converter_1 ]
-  set_property -dict [ list \
-   CONFIG.HAS_MI_TKEEP {1} \
-   CONFIG.M_TDATA_NUM_BYTES {4} \
-   CONFIG.S_TDATA_NUM_BYTES $::config_ip_bytes_out \
-   CONFIG.HAS_TLAST.VALUE_SRC USER \
-   CONFIG.HAS_TLAST {1} \
- ] $axis_dwidth_converter_1
-
-  # Create instance: ps8_0_axi_periph, and set properties
-  set ps8_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 ps8_0_axi_periph ]
-  set_property -dict [ list \
-   CONFIG.NUM_MI {2} \
- ] $ps8_0_axi_periph
-
-  # Create instance: resize_accel_0, and set properties
-  set resize_accel_0 [ create_bd_cell -type ip -vlnv $::config_ip_vlnv resize_accel_0 ]
-
   # Create instance: rst_ps8_0_100M, and set properties
   set rst_ps8_0_100M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps8_0_100M ]
 
@@ -867,28 +824,89 @@ proc create_root_design { parentCell } {
    CONFIG.SUBPRESET1 {Custom} \
  ] $zynq_ultra_ps_e_0
 
+ set native_bus_width_bytes 16
+
+ # Create instance: axi_dma_0, and set properties
+ set axi_dma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 axi_dma_0 ]
+ set_property -dict [ list \
+  CONFIG.c_include_sg {0} \
+  CONFIG.c_mm2s_burst_size {256} \
+  CONFIG.c_s2mm_burst_size {256} \
+  CONFIG.c_sg_include_stscntrl_strm {0} \
+  CONFIG.c_sg_length_width {23} \
+  CONFIG.c_single_interface {1} \
+  CONFIG.c_m_axi_s2mm_data_width [expr $native_bus_width_bytes * 8] \
+  CONFIG.c_m_axi_mm2s_data_width [expr $native_bus_width_bytes * 8] \
+  CONFIG.c_m_axis_mm2s_tdata_width [expr $native_bus_width_bytes * 8] \
+] $axi_dma_0
+
+ # Create instance: ps8_0_axi_periph, and set properties
+ set ps8_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 ps8_0_axi_periph ]
+ set_property -dict [ list \
+  CONFIG.NUM_MI {2} \
+] $ps8_0_axi_periph
+
+ # Create instance: resize_accel_0, and set properties
+ set resize_accel_0 [ create_bd_cell -type ip -vlnv $::config_ip_vlnv resize_accel_0 ]
+
+
+  # set generated Fclk
+  set_property -dict [list CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ $::config_ip_fclk] $zynq_ultra_ps_e_0
+
   # Create interface connections
-  connect_bd_intf_net -intf_net S00_AXI_1 [get_bd_intf_pins axi_dma_0/M_AXI_MM2S] [get_bd_intf_pins axi_interconnect_0/S00_AXI]
-  connect_bd_intf_net -intf_net S01_AXI_1 [get_bd_intf_pins axi_dma_0/M_AXI_S2MM] [get_bd_intf_pins axi_interconnect_0/S01_AXI]
-  connect_bd_intf_net -intf_net axi_dma_0_M_AXIS_MM2S [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S] [get_bd_intf_pins axis_dwidth_converter_0/S_AXIS]
-  connect_bd_intf_net -intf_net axi_interconnect_0_M00_AXI [get_bd_intf_pins axi_interconnect_0/M00_AXI] [get_bd_intf_pins zynq_ultra_ps_e_0/S_AXI_HP0_FPD]
-  connect_bd_intf_net -intf_net axis_dwidth_converter_0_M_AXIS [get_bd_intf_pins axis_dwidth_converter_0/M_AXIS] [get_bd_intf_pins resize_accel_0/$::config_ip_axis_name_in]
-  connect_bd_intf_net -intf_net axis_dwidth_converter_1_M_AXIS [get_bd_intf_pins axi_dma_0/S_AXIS_S2MM] [get_bd_intf_pins axis_dwidth_converter_1/M_AXIS]
+  connect_bd_intf_net [get_bd_intf_pins axi_dma_0/M_AXI] [get_bd_intf_pins zynq_ultra_ps_e_0/S_AXI_HP0_FPD]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_M00_AXI [get_bd_intf_pins axi_dma_0/S_AXI_LITE] [get_bd_intf_pins ps8_0_axi_periph/M00_AXI]
-  connect_bd_intf_net -intf_net resize_accel_0_dst [get_bd_intf_pins axis_dwidth_converter_1/S_AXIS] [get_bd_intf_pins resize_accel_0/$::config_ip_axis_name_out]
   connect_bd_intf_net -intf_net zynq_ultra_ps_e_0_M_AXI_HPM0_FPD [get_bd_intf_pins ps8_0_axi_periph/S00_AXI] [get_bd_intf_pins zynq_ultra_ps_e_0/M_AXI_HPM0_FPD]
 
   # Create port connections
-  connect_bd_net -net rst_ps8_0_100M_interconnect_aresetn [get_bd_pins axi_interconnect_0/ARESETN] [get_bd_pins axis_dwidth_converter_0/aresetn] [get_bd_pins axis_dwidth_converter_1/aresetn] [get_bd_pins ps8_0_axi_periph/ARESETN] [get_bd_pins rst_ps8_0_100M/interconnect_aresetn]
-  connect_bd_net -net rst_ps8_0_100M_peripheral_aresetn [get_bd_pins axi_dma_0/axi_resetn] [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins axi_interconnect_0/S01_ARESETN] [get_bd_pins ps8_0_axi_periph/M00_ARESETN] [get_bd_pins ps8_0_axi_periph/M01_ARESETN] [get_bd_pins ps8_0_axi_periph/S00_ARESETN] [get_bd_pins resize_accel_0/$::config_ip_nrst_name] [get_bd_pins rst_ps8_0_100M/peripheral_aresetn]
-  connect_bd_net -net zynq_ultra_ps_e_0_pl_clk0 [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] [get_bd_pins axi_dma_0/m_axi_s2mm_aclk] [get_bd_pins axi_dma_0/s_axi_lite_aclk] [get_bd_pins axi_interconnect_0/ACLK] [get_bd_pins axi_interconnect_0/M00_ACLK] [get_bd_pins axi_interconnect_0/S00_ACLK] [get_bd_pins axi_interconnect_0/S01_ACLK] [get_bd_pins axis_dwidth_converter_0/aclk] [get_bd_pins axis_dwidth_converter_1/aclk] [get_bd_pins ps8_0_axi_periph/ACLK] [get_bd_pins ps8_0_axi_periph/M00_ACLK] [get_bd_pins ps8_0_axi_periph/M01_ACLK] [get_bd_pins ps8_0_axi_periph/S00_ACLK] [get_bd_pins resize_accel_0/$::config_ip_clk_name] [get_bd_pins rst_ps8_0_100M/slowest_sync_clk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins zynq_ultra_ps_e_0/saxihp0_fpd_aclk]
+  connect_bd_net -net rst_ps8_0_100M_interconnect_aresetn [get_bd_pins ps8_0_axi_periph/ARESETN] [get_bd_pins rst_ps8_0_100M/interconnect_aresetn]
+  connect_bd_net -net rst_ps8_0_100M_peripheral_aresetn [get_bd_pins axi_dma_0/axi_resetn] [get_bd_pins ps8_0_axi_periph/M00_ARESETN] [get_bd_pins ps8_0_axi_periph/M01_ARESETN] [get_bd_pins ps8_0_axi_periph/S00_ARESETN] [get_bd_pins resize_accel_0/$::config_ip_nrst_name] [get_bd_pins rst_ps8_0_100M/peripheral_aresetn]
+  connect_bd_net -net zynq_ultra_ps_e_0_pl_clk0 [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] [get_bd_pins axi_dma_0/m_axi_s2mm_aclk] [get_bd_pins axi_dma_0/s_axi_lite_aclk] [get_bd_pins ps8_0_axi_periph/ACLK] [get_bd_pins ps8_0_axi_periph/M00_ACLK] [get_bd_pins ps8_0_axi_periph/M01_ACLK] [get_bd_pins ps8_0_axi_periph/S00_ACLK] [get_bd_pins resize_accel_0/$::config_ip_clk_name] [get_bd_pins rst_ps8_0_100M/slowest_sync_clk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins zynq_ultra_ps_e_0/saxihp0_fpd_aclk]
   connect_bd_net -net zynq_ultra_ps_e_0_pl_resetn0 [get_bd_pins rst_ps8_0_100M/ext_reset_in] [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0]
 
+  # Create DWCs for input and output streams only if accel I/O size does not
+  # match the native bus width
+  if { $::config_ip_bytes_in != $native_bus_width_bytes } {
+    # Create instance: axis_dwidth_converter_0, and set properties
+    set axis_dwidth_converter_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_dwidth_converter:1.1 axis_dwidth_converter_0 ]
+    set_property -dict [ list \
+     CONFIG.M_TDATA_NUM_BYTES $::config_ip_bytes_in \
+     CONFIG.S_TDATA_NUM_BYTES $native_bus_width_bytes \
+   ] $axis_dwidth_converter_0
+   # connect input DWC
+   connect_bd_intf_net -intf_net axi_dma_0_M_AXIS_MM2S [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S] [get_bd_intf_pins axis_dwidth_converter_0/S_AXIS]
+   connect_bd_intf_net -intf_net axis_dwidth_converter_0_M_AXIS [get_bd_intf_pins axis_dwidth_converter_0/M_AXIS] [get_bd_intf_pins resize_accel_0/$::config_ip_axis_name_in]
+   connect_bd_net -net zynq_ultra_ps_e_0_pl_clk0 [get_bd_pins axis_dwidth_converter_0/aclk]
+   connect_bd_net -net rst_ps8_0_100M_interconnect_aresetn [get_bd_pins axis_dwidth_converter_0/aresetn]
+  } else {
+    # connect accelerator input directly to AXI DMA
+    connect_bd_intf_net -intf_net accel_in [get_bd_intf_pins axi_dma_0/M_AXIS_MM2S] [get_bd_intf_pins resize_accel_0/$::config_ip_axis_name_in]
+  }
+
+  if { $::config_ip_bytes_out != $native_bus_width_bytes } {
+    # Create instance: axis_dwidth_converter_1, and set properties
+    set axis_dwidth_converter_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_dwidth_converter:1.1 axis_dwidth_converter_1 ]
+    set_property -dict [ list \
+     CONFIG.HAS_MI_TKEEP {1} \
+     CONFIG.M_TDATA_NUM_BYTES $native_bus_width_bytes \
+     CONFIG.S_TDATA_NUM_BYTES $::config_ip_bytes_out \
+     CONFIG.HAS_TLAST.VALUE_SRC USER \
+     CONFIG.HAS_TLAST {1} \
+   ] $axis_dwidth_converter_1
+   # connect output DWC
+   connect_bd_intf_net -intf_net axis_dwidth_converter_1_M_AXIS [get_bd_intf_pins axi_dma_0/S_AXIS_S2MM] [get_bd_intf_pins axis_dwidth_converter_1/M_AXIS]
+   connect_bd_intf_net -intf_net resize_accel_0_dst [get_bd_intf_pins axis_dwidth_converter_1/S_AXIS] [get_bd_intf_pins resize_accel_0/$::config_ip_axis_name_out]
+   connect_bd_net -net zynq_ultra_ps_e_0_pl_clk0 [get_bd_pins axis_dwidth_converter_1/aclk]
+   connect_bd_net -net rst_ps8_0_100M_interconnect_aresetn [get_bd_pins axis_dwidth_converter_1/aresetn]
+  } else {
+    # connect accelerator output directly to AXI DMA
+    connect_bd_intf_net -intf_net accel_out [get_bd_intf_pins axi_dma_0/S_AXIS_S2MM] [get_bd_intf_pins resize_accel_0/$::config_ip_axis_name_out]
+  }
+
+
   # Create address segments
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_0/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_DDR_LOW] SEG_zynq_ultra_ps_e_0_HP0_DDR_LOW
-  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_0/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_DDR_LOW] SEG_zynq_ultra_ps_e_0_HP0_DDR_LOW
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_0/Data_MM2S] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_LPS_OCM] SEG_zynq_ultra_ps_e_0_HP0_LPS_OCM
-  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_0/Data_S2MM] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_LPS_OCM] SEG_zynq_ultra_ps_e_0_HP0_LPS_OCM
+  create_bd_addr_seg -range 0x80000000 -offset 0x00000000 [get_bd_addr_spaces axi_dma_0/Data] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_DDR_LOW] SEG_zynq_ultra_ps_e_0_HP0_DDR_LOW
+  create_bd_addr_seg -range 0x01000000 -offset 0xFF000000 [get_bd_addr_spaces axi_dma_0/Data] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_LPS_OCM] SEG_zynq_ultra_ps_e_0_HP0_LPS_OCM
   create_bd_addr_seg -range 0x00001000 -offset 0xA0000000 [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_dma_0/S_AXI_LITE/Reg] SEG_axi_dma_0_Reg
 
 
@@ -899,7 +917,6 @@ proc create_root_design { parentCell } {
 
   # Restore current instance
   current_bd_instance $oldCurInst
-
   validate_bd_design
   save_bd_design
 }
